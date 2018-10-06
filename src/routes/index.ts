@@ -1,5 +1,23 @@
 import { NextFunction, Request, Response, Router } from "express";
+import * as request from "request";
+import sha1 = require("sha1");
+import querystring = require('querystring');
 import { BaseRoute } from "./route";
+import { config, IConfig } from '../config';
+
+class WXToken {
+  public token: string;
+  constructor(token: string) {
+    this.token = token;
+  }
+}
+
+class WXTicket {
+  public ticket: string;
+  constructor(ticket: string) {
+    this.ticket = ticket;
+  }
+}
 
 /**
  * IndexRoute
@@ -27,7 +45,7 @@ export class IndexRoute extends BaseRoute {
    */
   public static create(router: Router) {
     console.log("[IndexRoute::create] Creating index route");
-    
+
     // add home page route
     router.get("/", (req: Request, res: Response, next: NextFunction) => {
       new IndexRoute().index(req, res, next);
@@ -43,7 +61,7 @@ export class IndexRoute extends BaseRoute {
    * @param res {Response} The express Response Object.
    * @param next {NextFunction} Execute the next method.
    */
-  public index(req: Request, res: Response, next: NextFunction) {
+  public async index(req: Request, res: Response, next: NextFunction) {
     // set custom title
     this.title = "Home | TS Blog";
 
@@ -51,7 +69,71 @@ export class IndexRoute extends BaseRoute {
       "message": "Welcome to the TS Blog",
     };
 
-    // render template
-    this.render(req, res, "index", options);
+    const url = req.protocol + '://' + req.get('host') + req.originalUrl;
+
+    const tokenRes = await this.getWXToken();
+    const token = tokenRes.token || '';
+    const ticketRes = await this.getWXTicket(token);
+    const ticket = ticketRes.ticket || '';
+    const timestamp = `${parseInt(new Date().getTime() / 1000 + '', 10)}`;
+
+    const signatureParamsObj = {
+      'jsapi_ticket': ticket,
+      noncestr: config.nonceStr,
+      timestamp,
+      url,
+    };
+
+    
+
+    const signatureParams = querystring.stringify(this.ksort(signatureParamsObj));
+
+    const signature = sha1(signatureParams).toString();
+
+    this.render(req, res, "index", {
+      title: 'Home | TS Blog',
+      message: 'Welcome to the TS Blog',
+      appId: config.appId,
+      timestamp,
+      nonceStr: config.nonceStr,
+      signature,
+    });
+  }
+
+  private getWXTicket(token: string): Promise<WXTicket> {
+    return new Promise((resolve, reject) => {
+      request.get(`https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=${token}&type=jsapi`, (err, res, body) => {
+        if (err) {
+          return reject(err);
+        }
+
+        const ticket = JSON.parse(body).ticket || '';
+        return resolve(new WXTicket(ticket));
+      })
+    });
+  }
+
+  private getWXToken(): Promise<WXToken> {
+    return new Promise((resolve, reject) => {
+      request.get(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${config.appId}&secret=${config.appSecret}`, (err, res, body) => {
+        if (err) {
+          return reject(err);
+        }
+
+        const token = JSON.parse(body).access_token || '';
+        return resolve(new WXToken(token));
+      });
+    });
+  }
+
+  private ksort(obj) {
+    const keys = Object.keys(obj).sort();
+    const sortedObj = {};
+
+    for (var i in keys) {
+      sortedObj[keys[i]] = obj[keys[i]];
+    }
+
+    return sortedObj;
   }
 }

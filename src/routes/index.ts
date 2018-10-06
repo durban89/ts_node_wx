@@ -87,7 +87,9 @@ export class IndexRoute extends BaseRoute {
     // console.log(this.ksort(signatureParamsObj));
     // const signatureParams = querystring.stringify(this.ksort(signatureParamsObj));
     // console.log('signatureParams = ', signatureParams);
-    const signature = sha1('jsapi_ticket=' + ticket + '&noncestr=' + config.nonceStr + '&timestamp=' + timestamp + '&url=' + url).toString();
+    const params = 'jsapi_ticket=' + ticket + '&noncestr=' + config.nonceStr + '&timestamp=' + timestamp + '&url=' + url;
+    console.log('params = ', params);
+    const signature = sha1(params).toString();
 
     this.render(req, res, "index", {
       title: 'Home | TS Blog',

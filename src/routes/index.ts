@@ -69,7 +69,7 @@ export class IndexRoute extends BaseRoute {
       "message": "Welcome to the TS Blog",
     };
 
-    const url = req.protocol + '://' + req.get('host') + req.originalUrl;
+    const url = 'https://www.xiaorongmao.com/test/wx/';//req.protocol + '://' + req.get('host') + req.originalUrl;
 
     const tokenRes = await this.getWXToken();
     const token = tokenRes.token || '';

@@ -65,11 +65,9 @@ export class IndexRoute extends BaseRoute {
     // set custom title
     this.title = "Home | TS Blog";
 
-    let options: Object = {
-      "message": "Welcome to the TS Blog",
-    };
-
-    const url = 'https://www.xiaorongmao.com/test/wx/';//req.protocol + '://' + req.get('host') + req.originalUrl;
+    const testUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+    console.log(testUrl);
+    const url = 'https://www.xiaorongmao.com/test/wx/';
 
     const tokenRes = await this.getWXToken();
     const token = tokenRes.token || '';
@@ -77,28 +75,31 @@ export class IndexRoute extends BaseRoute {
     const ticket = ticketRes.ticket || '';
     const timestamp = `${parseInt(new Date().getTime() / 1000 + '', 10)}`;
 
-    const signatureParamsObj = {
-      'jsapi_ticket': ticket,
-      noncestr: config.nonceStr,
-      timestamp,
-      url,
-    };
+    // const signatureParamsObj = {
+    //   'jsapi_ticket': ticket,
+    //   noncestr: config.nonceStr,
+    //   timestamp,
+    //   url,
+    // };
 
     // console.log(this.ksort(signatureParamsObj));
     // const signatureParams = querystring.stringify(this.ksort(signatureParamsObj));
     // console.log('signatureParams = ', signatureParams);
     const params = 'jsapi_ticket=' + ticket + '&noncestr=' + config.nonceStr + '&timestamp=' + timestamp + '&url=' + url;
-    console.log('params = ', params);
     const signature = sha1(params).toString();
 
-    this.render(req, res, "index", {
+
+    let options: Object = {
       title: 'Home | TS Blog',
       message: 'Welcome to the TS Blog',
       appId: config.appId,
       timestamp,
       nonceStr: config.nonceStr,
       signature,
-    });
+    };
+
+
+    this.render(req, res, "index", options);
   }
 
   private getWXTicket(token: string): Promise<WXTicket> {

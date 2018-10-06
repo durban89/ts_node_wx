@@ -67,6 +67,7 @@ export class Server {
     // add static paths
     this.app.use(express.static(path.join(__dirname, 'public')));
 
+    this.app.set('trust proxy', true);
     // configure pug
     // this.app.set('views', path.join(__dirname, "views"));
     // this.app.set("view engine", "pug");

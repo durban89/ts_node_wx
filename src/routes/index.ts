@@ -49,7 +49,10 @@ export class IndexRoute extends BaseRoute {
     // add home page route
     router.get("/", (req: Request, res: Response, next: NextFunction) => {
       new IndexRoute().index(req, res, next);
-    })
+    });
+    router.get("/location/", (req: Request, res: Response, next: NextFunction) => {
+      new IndexRoute().index(req, res, next);
+    });
   }
 
   /**
@@ -65,9 +68,9 @@ export class IndexRoute extends BaseRoute {
     // set custom title
     this.title = "Home | TS Blog";
 
-    const testUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
-    console.log(testUrl);
-    const url = 'https://www.xiaorongmao.com/test/wx/';
+    const url = req.protocol + '://' + req.get('host') + req.originalUrl;
+    console.log(url);
+    // const url = 'https://www.xiaorongmao.com/test/wx/';
 
     const tokenRes = await this.getWXToken();
     const token = tokenRes.token || '';

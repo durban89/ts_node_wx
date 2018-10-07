@@ -69,8 +69,6 @@ export class IndexRoute extends BaseRoute {
     this.title = "Home | TS Blog";
 
     const url = req.protocol + '://' + req.get('host') + req.originalUrl;
-    console.log(url);
-    // const url = 'https://www.xiaorongmao.com/test/wx/';
 
     const tokenRes = await this.getWXToken();
     const token = tokenRes.token || '';
